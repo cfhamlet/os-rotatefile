@@ -1,2 +1,12 @@
 # os-rotatefile
-For reading and writing files which rotate by size.
+Reading and writing size rotate file.
+
+# Install
+  `pip install os-rotatefile`
+
+# Unit Tests
+  `$ tox`
+
+# License
+MIT licensed.
+
