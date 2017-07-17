@@ -1,0 +1,9 @@
+[run]
+parallel = true
+branch = true
+source = os_rotatefile
+
+[paths]
+source =
+    src/os_rotatefile
+    .tox/*/lib/python*/site-packages/os_rotatefile
