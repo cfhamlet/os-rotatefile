@@ -2,7 +2,7 @@ import os
 import pytest
 import StringIO
 from os_rotatefile import open_file
-from os_rotatefile.rotatefile import valid_roll_size
+from os_rotatefile.rotatefile import valid_size
 
 
 def test_write_append(tmpdir):
@@ -73,6 +73,12 @@ def test_read(tmpdir):
         t2.write('123')
         f = open_file('abc', 'r')
         assert f.read(10) == 'abc123'
+        f = open_file('abc', 'r')
+        assert f.read() == 'abc123'
+        f = open_file('abc', 'r', buffer_size = 2)
+        assert f.read() == 'ab'
+        assert f.read() == 'c1'
+        assert f.read() == '23'
 
 
 def test_write_rotate(tmpdir):
@@ -100,7 +106,11 @@ def test_valid_roll_size():
     ]
 
     for k, v in data:
-        assert valid_roll_size(k) == v
+        assert valid_size(k) == v
 
     with pytest.raises(TypeError):
-        valid_roll_size(True)
+        valid_size(True)
+    with pytest.raises(ValueError):
+        valid_size('-1k')
+    with pytest.raises(ValueError):
+        valid_size('0')

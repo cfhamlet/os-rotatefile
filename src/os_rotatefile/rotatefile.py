@@ -32,10 +32,11 @@ class RotateBase(object):
 
 
 class RotateReader(RotateBase):
-    def __init__(self, base_filename):
+    def __init__(self, base_filename, buffer_size='128k'):
         super(RotateReader, self).__init__(base_filename)
         self._idx = None
         self._end = False
+        self._buffer_size = valid_size(buffer_size)
         self._open_next()
 
     def _open_next(self):
@@ -59,14 +60,16 @@ class RotateReader(RotateBase):
         self._fp = open(filename, "r")
         self.closed = False
 
-    def read(self, size):
+    def read(self, size=-1):
+        if size < 0:
+            size = self._buffer_size
         _complain_ifclosed(self.closed)
         assert size >= 0, 'size must >= 0'
         if self._end or size == 0:
             return ''
-        buffer = StringIO.StringIO()
+        buf = StringIO.StringIO()
         need = size
-        while buffer.len < size:
+        while buf.len < size:
             data = self._fp.read(need)
             if not data:
                 try:
@@ -78,11 +81,11 @@ class RotateReader(RotateBase):
                     self._end = True
                     break
 
-            buffer.write(data)
-            need = size - buffer.len
+            buf.write(data)
+            need = size - buf.len
 
-        buffer.seek(0)
-        return buffer.read()
+        buf.seek(0)
+        return buf.read()
 
     def readline(self):
         _complain_ifclosed(self.closed)
@@ -110,7 +113,7 @@ class RotateReader(RotateBase):
 class RotateWriter(RotateBase):
     def __init__(self, base_filename, roll_size='1G'):
         super(RotateWriter, self).__init__(base_filename)
-        self._roll_size = valid_roll_size(roll_size)
+        self._roll_size = valid_size(roll_size)
         assert self._roll_size > 0, 'roll_size must > 0'
         self._size = -1
         self._open_next()
@@ -169,16 +172,19 @@ def open_file(name, mode='r', **kwargs):
     return c(name, **kwargs)
 
 
-def valid_roll_size(roll_size):
-    if not isinstance(roll_size, (six.types.IntType, six.types.StringType)) or isinstance(roll_size, six.types.BooleanType):
-        raise TypeError, 'roll_size must be int or string type'
-    if isinstance(roll_size, six.types.IntType):
-        roll_size = int(roll_size)
-        return roll_size
-    roll_size = roll_size.lower()
+def valid_size(size):
+    if not isinstance(size, (six.types.IntType, six.types.StringType)) or isinstance(size, six.types.BooleanType):
+        raise TypeError, 'size must be int or string type'
+    if isinstance(size, six.types.IntType):
+        size = str(int(size))
+    else:
+        size = size.lower()
     multi = 1
     for idx, x in enumerate(["k", "m", "g"]):
-        if x == roll_size[-1]:
-            roll_size = roll_size[:-1]
+        if x == size[-1]:
+            size = size[:-1]
             multi = pow(1024, idx + 1)
-    return int(float(roll_size) * multi)
+    r = int(float(size) * multi)
+    if r <= 0:
+        raise ValueError, 'size must > 0'
+    return r
