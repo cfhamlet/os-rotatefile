@@ -1,6 +1,5 @@
 # os-rotatefile
 [![Build Status](https://www.travis-ci.org/cfhamlet/os-rotatefile.svg?branch=master)](https://www.travis-ci.org/cfhamlet/os-rotatefile)
-
 [![codecov](https://codecov.io/gh/cfhamlet/os-rotatefile/branch/master/graph/badge.svg)](https://codecov.io/gh/cfhamlet/os-rotatefile)
 
 Reading and writing size rotate file.
