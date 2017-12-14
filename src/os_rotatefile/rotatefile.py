@@ -43,17 +43,21 @@ class RotateReader(RotateBase):
         if self._end:
             return
         if self._idx is None:
-            self._idx = sys.maxint
-            has_min = False
             for x in [x for x in os.listdir(self._path) if x.startswith(self._prefix)]:
-                try:
-                    self._idx = min(
-                        self._idx, int(x[len(self._prefix):]))
-                    has_min = True
-                except:
+                idx = x[len(self._prefix):]
+                if not idx.isdigit():
                     continue
-            if has_min and self._idx >= 0:
-                self._idx += -1
+                if idx.startswith('0') and idx != '0':
+                    continue
+                idx = int(idx)
+                if idx < 0:
+                    continue
+                self._idx = idx if self._idx is None else min(
+                    self._idx, idx)
+            if self._idx is not None:
+                self._idx -= 1
+            else:
+                raise IOError('file not found')
 
         self._idx += 1
         filename = self._get_filename(self._idx)
@@ -73,9 +77,8 @@ class RotateReader(RotateBase):
             data = self._fp.read(need)
             if not data:
                 try:
-                    fp = self._fp
+                    self._fp.close()
                     self._open_next()
-                    fp.close()
                     continue
                 except IOError:
                     self._end = True
@@ -97,9 +100,8 @@ class RotateReader(RotateBase):
             line = self._fp.readline()
             if not line:
                 try:
-                    fp = self._fp
+                    self._fp.close()
                     self._open_next()
-                    fp.close
                 except IOError:
                     self._end = True
                     break
@@ -124,17 +126,21 @@ class RotateWriter(RotateBase):
 
         if self._idx < 0:
             for x in [x for x in os.listdir(self._path) if x.startswith(self._prefix)]:
-                try:
-                    self._idx = max(
-                        self._idx, int(x[len(self._prefix):]))
-                except:
+                idx = x[len(self._prefix):]
+                if not idx.isdigit():
                     continue
+                if idx.startswith('0') and idx != '0':
+                    continue
+                idx = int(idx)
+                if idx < 0:
+                    continue
+                self._idx = max(self._idx, int(idx))
 
             if self._idx >= 0:
                 filename = self._get_filename(self._idx)
                 size = os.path.getsize(filename)
                 if size < self._roll_size:
-                    self._idx += -1
+                    self._idx -= 1
 
         self._idx += 1
         filename = self._get_filename(self._idx)
@@ -166,6 +172,13 @@ class RotateWriter(RotateBase):
 
 
 def open_file(name, mode='r', **kwargs):
+    base_filename = os.path.basename(name)
+    if not base_filename:
+        raise ValueError, "not support open path"
+    
+    if os.path.isfile(name) and mode == 'r':
+        return open(name, 'r')
+
     def not_support(name, **kwargs):
         raise ValueError, "mode must be 'r' or 'w'"
     c = {'w': RotateWriter, 'r': RotateReader}.get(mode, not_support)
