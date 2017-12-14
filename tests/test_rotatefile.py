@@ -4,6 +4,15 @@ import StringIO
 from os_rotatefile import open_file
 from os_rotatefile.rotatefile import valid_size
 
+def test_read_single_file(tmpdir):
+    with tmpdir.as_cwd():
+        word = "abc"
+        f = tmpdir.join('abc')
+        f.write(word)
+        f = open_file('abc', 'r')
+        c = f.read()
+        assert c == word
+
 
 def test_write_append(tmpdir):
     with tmpdir.as_cwd():
