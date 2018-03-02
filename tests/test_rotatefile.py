@@ -4,6 +4,15 @@ import StringIO
 from os_rotatefile import open_file
 from os_rotatefile.rotatefile import valid_size
 
+def test_flush(tmpdir):
+    with tmpdir.as_cwd():
+        f = open_file('abc', 'w')
+        f.write('data1')
+        f.flush()
+        f.close()
+        with pytest.raises(ValueError):
+            f.flush()
+
 def test_read_single_file(tmpdir):
     with tmpdir.as_cwd():
         word = "abc"

@@ -170,12 +170,16 @@ class RotateWriter(RotateBase):
                 self.close()
                 self._open_next()
 
+    def flush(self):
+        _complain_ifclosed(self.closed)
+        self._fp.flush()
+
 
 def open_file(name, mode='r', **kwargs):
     base_filename = os.path.basename(name)
     if not base_filename:
         raise ValueError, "not support open path"
-    
+
     if os.path.isfile(name) and mode == 'r':
         return open(name, 'r')
 
