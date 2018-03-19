@@ -26,7 +26,6 @@ setup(
     author_email='cfhamlet@gmail.com',
     url='https://github.com/cfhamlet/os-ratatefile',
     zip_safe=False,
-    install_requires=['six>=1.5.2',],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

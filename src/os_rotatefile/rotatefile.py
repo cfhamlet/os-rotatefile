@@ -1,12 +1,19 @@
 import os
-import six
-import sys
 import StringIO
+import sys
+
+_PY3 = sys.version_info[0] == 3
+if _PY3:
+    string_types = str
+    integer_types = int
+else:
+    string_types = basestring
+    integer_types = (int, long)
 
 
 def _complain_ifclosed(closed):
     if closed:
-        raise ValueError, "I/O operation on closed file"
+        raise ValueError("I/O operation on closed file")
 
 
 class RotateBase(object):
@@ -19,7 +26,7 @@ class RotateBase(object):
 
     def _get_filename(self, idx):
         if idx < 0:
-            raise ValueError, 'idx must >= 0'
+            raise ValueError('idx must >= 0')
         return os.path.join(self._path, '%s%d' % (self._prefix, idx))
 
     def close(self):
@@ -178,30 +185,35 @@ class RotateWriter(RotateBase):
 def open_file(name, mode='r', **kwargs):
     base_filename = os.path.basename(name)
     if not base_filename:
-        raise ValueError, "not support open path"
+        raise ValueError("not support open path")
 
     if os.path.isfile(name) and mode == 'r':
         return open(name, 'r')
 
     def not_support(name, **kwargs):
-        raise ValueError, "mode must be 'r' or 'w'"
+        raise ValueError("mode must be 'r' or 'w'")
     c = {'w': RotateWriter, 'r': RotateReader}.get(mode, not_support)
     return c(name, **kwargs)
 
 
+MAX_FILE_SIZE = 1024 ** 4
+
+
 def valid_size(size):
-    if not isinstance(size, (six.types.IntType, six.types.StringType)) or isinstance(size, six.types.BooleanType):
-        raise TypeError, 'size must be int or string type'
-    if isinstance(size, six.types.IntType):
+    if not isinstance(size, (integer_types, string_types)) or isinstance(size, bool):
+        raise TypeError('size must be int or string type')
+    if isinstance(size, integer_types):
         size = str(int(size))
     else:
         size = size.lower()
     multi = 1
-    for idx, x in enumerate(["k", "m", "g"]):
-        if x == size[-1]:
-            size = size[:-1]
-            multi = pow(1024, idx + 1)
+    weight = {'k': 1, 'm': 2, 'g': 3, 't': 4}
+    if size[-1] in weight:
+        multi = pow(1024, weight[size[-1]])
+        size = size[:-1]
     r = int(float(size) * multi)
     if r <= 0:
-        raise ValueError, 'size must > 0'
+        raise ValueError('size must > 0')
+    elif r > MAX_FILE_SIZE:
+        raise ValueError('size must <= %d' % MAX_FILE_SIZE)
     return r

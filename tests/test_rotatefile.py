@@ -4,6 +4,7 @@ import StringIO
 from os_rotatefile import open_file
 from os_rotatefile.rotatefile import valid_size
 
+
 def test_flush(tmpdir):
     with tmpdir.as_cwd():
         f = open_file('abc', 'w')
@@ -12,6 +13,7 @@ def test_flush(tmpdir):
         f.close()
         with pytest.raises(ValueError):
             f.flush()
+
 
 def test_read_single_file(tmpdir):
     with tmpdir.as_cwd():
@@ -93,7 +95,7 @@ def test_read(tmpdir):
         assert f.read(10) == 'abc123'
         f = open_file('abc', 'r')
         assert f.read() == 'abc123'
-        f = open_file('abc', 'r', buffer_size = 2)
+        f = open_file('abc', 'r', buffer_size=2)
         assert f.read() == 'ab'
         assert f.read() == 'c1'
         assert f.read() == '23'
@@ -132,3 +134,5 @@ def test_valid_roll_size():
         valid_size('-1k')
     with pytest.raises(ValueError):
         valid_size('0')
+    with pytest.raises(ValueError):
+        valid_size(str(1024**10))
