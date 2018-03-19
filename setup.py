@@ -24,7 +24,7 @@ setup(
     long_description=open('README.md').read(),
     author='Ozzy',
     author_email='cfhamlet@gmail.com',
-    url='https://github.com/cfhamlet/os-ratatefile',
+    url='https://github.com/cfhamlet/os-rotatefile',
     zip_safe=False,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
