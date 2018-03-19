@@ -1,6 +1,6 @@
 import os
+
 import pytest
-import StringIO
 from os_rotatefile import open_file
 from os_rotatefile.rotatefile import valid_size
 
@@ -8,7 +8,7 @@ from os_rotatefile.rotatefile import valid_size
 def test_flush(tmpdir):
     with tmpdir.as_cwd():
         f = open_file('abc', 'w')
-        f.write('data1')
+        f.write(b'data1')
         f.flush()
         f.close()
         with pytest.raises(ValueError):
@@ -17,7 +17,7 @@ def test_flush(tmpdir):
 
 def test_read_single_file(tmpdir):
     with tmpdir.as_cwd():
-        word = "abc"
+        word = b"abc"
         f = tmpdir.join('abc')
         f.write(word)
         f = open_file('abc', 'r')
@@ -28,26 +28,26 @@ def test_read_single_file(tmpdir):
 def test_write_append(tmpdir):
     with tmpdir.as_cwd():
         f1 = tmpdir.join('abc0')
-        f1.write('abc')
+        f1.write(b'abc')
         f = open_file('abc', 'w', roll_size=4)
-        f.write('1234')
+        f.write(b'1234')
         f.close()
-        f = open('abc0')
+        f = open('abc0', 'rb')
         c = f.read()
-        assert c == 'abc1'
-        f = open('abc1')
+        assert c == b'abc1'
+        f = open('abc1', 'rb')
         c = f.read()
-        assert c == '234'
+        assert c == b'234'
 
 
 def test_write_max_idx(tmpdir):
     with tmpdir.as_cwd():
         f1 = tmpdir.join('abc0')
-        f1.write('abc')
+        f1.write(b'abc')
         f1 = tmpdir.join('abc3')
-        f1.write('123')
+        f1.write(b'123')
         f = open_file('abc', 'w', roll_size=3)
-        f.write('xyz')
+        f.write(b'xyz')
         f.close()
         f = open('abc4')
         c = f.read()
@@ -63,21 +63,21 @@ def test_mode(tmpdir):
 def test_close(tmpdir):
     with tmpdir.as_cwd():
         f = open_file('abc', 'w', roll_size=10)
-        f.write('abc')
+        f.write(b'abc')
         f.close()
         assert f.closed == True
         with pytest.raises(ValueError):
-            f.write('123')
+            f.write(b'123')
 
 
 def test_readline(tmpdir):
     with tmpdir.as_cwd():
         t1 = tmpdir.join('abc0')
-        t1.write('abc')
+        t1.write(b'abc')
         t2 = tmpdir.join('abc1')
-        t2.write('123\n')
+        t2.write(b'123\n')
         f = open_file('abc', 'r')
-        assert f.readline() == 'abc123\n'
+        assert f.readline() == b'abc123\n'
 
 
 def test_read_not_exist():
@@ -88,23 +88,23 @@ def test_read_not_exist():
 def test_read(tmpdir):
     with tmpdir.as_cwd():
         t1 = tmpdir.join('abc0')
-        t1.write('abc')
+        t1.write(b'abc')
         t2 = tmpdir.join('abc1')
-        t2.write('123')
+        t2.write(b'123')
         f = open_file('abc', 'r')
-        assert f.read(10) == 'abc123'
+        assert f.read(10) == b'abc123'
         f = open_file('abc', 'r')
-        assert f.read() == 'abc123'
+        assert f.read() == b'abc123'
         f = open_file('abc', 'r', buffer_size=2)
-        assert f.read() == 'ab'
-        assert f.read() == 'c1'
-        assert f.read() == '23'
+        assert f.read() == b'ab'
+        assert f.read() == b'c1'
+        assert f.read() == b'23'
 
 
 def test_write_rotate(tmpdir):
     with tmpdir.as_cwd():
         f = open_file('abc', 'w', roll_size=10)
-        f.write('1' * 100)
+        f.write(b'1' * 100)
         f.close()
         for i in range(0, 10):
             fn = 'abc%d' % i

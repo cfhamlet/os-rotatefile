@@ -1,5 +1,5 @@
 import sys
-from rotatefile import open_file
+from .rotatefile import open_file
 __all__ = ['__version__', 'version_info', 'open_file']
 
 import pkgutil

@@ -1,11 +1,12 @@
 import os
-import StringIO
 import sys
+from io import BytesIO
 
 _PY3 = sys.version_info[0] == 3
 if _PY3:
     string_types = str
     integer_types = int
+
 else:
     string_types = basestring
     integer_types = (int, long)
@@ -68,7 +69,7 @@ class RotateReader(RotateBase):
 
         self._idx += 1
         filename = self._get_filename(self._idx)
-        self._fp = open(filename, "r")
+        self._fp = open(filename, "rb")
         self.closed = False
 
     def read(self, size=-1):
@@ -77,10 +78,10 @@ class RotateReader(RotateBase):
         _complain_ifclosed(self.closed)
         assert size >= 0, 'size must >= 0'
         if self._end or size == 0:
-            return ''
-        buf = StringIO.StringIO()
+            return b''
+        buf = BytesIO()
         need = size
-        while buf.len < size:
+        while buf.tell() < size:
             data = self._fp.read(need)
             if not data:
                 try:
@@ -92,7 +93,7 @@ class RotateReader(RotateBase):
                     break
 
             buf.write(data)
-            need = size - buf.len
+            need = size - buf.tell()
 
         buf.seek(0)
         return buf.read()
@@ -100,10 +101,10 @@ class RotateReader(RotateBase):
     def readline(self):
         _complain_ifclosed(self.closed)
         if self._end:
-            return ''
-        buffer = StringIO.StringIO()
-        e = ''
-        while e != '\n':
+            return b''
+        buffer = BytesIO()
+        e = b''
+        while e != b'\n':
             line = self._fp.readline()
             if not line:
                 try:
@@ -151,12 +152,14 @@ class RotateWriter(RotateBase):
 
         self._idx += 1
         filename = self._get_filename(self._idx)
-        self._fp = open(filename, "a")
+        self._fp = open(filename, "ab")
         self._size = os.path.getsize(filename)
         self.closed = False
 
     def write(self, data, flush=False):
         _complain_ifclosed(self.closed)
+        if not isinstance(data, bytes):
+            raise TypeError('unsupported type: {}'.format(type(data).__name__))
         if self._fp is None:
             self._open_next()
         while True:
@@ -188,7 +191,7 @@ def open_file(name, mode='r', **kwargs):
         raise ValueError("not support open path")
 
     if os.path.isfile(name) and mode == 'r':
-        return open(name, 'r')
+        return open(name, 'rb')
 
     def not_support(name, **kwargs):
         raise ValueError("mode must be 'r' or 'w'")
