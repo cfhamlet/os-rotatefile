@@ -15,7 +15,7 @@ Read and write size rotate file.
     from os_roatefile import open_file
 
     f = open_file('file', 'w', roll_size='1G')
-    f.write('Your data')
+    f.write(b'Your data')
     f.close()
   ```
   * Read
