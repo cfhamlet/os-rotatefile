@@ -12,7 +12,7 @@ Read and write size rotate file.
 # Usage
   * Write
   ```
-    from os_roatefile import open_file
+    from os_rotatefile import open_file
 
     f = open_file('file', 'w', roll_size='1G')
     f.write(b'Your data')
@@ -20,7 +20,7 @@ Read and write size rotate file.
   ```
   * Read
   ```
-    from os_roatefile import open_file
+    from os_rotatefile import open_file
 
     f = open_file('file', 'r', buffer_size='128K')
     f.readline()
